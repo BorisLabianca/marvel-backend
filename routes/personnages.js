@@ -17,7 +17,7 @@ router.get("/personnages", async (req, res) => {
     if (req.query.limit) {
       limit = "";
     }
-    console.log(req.query.name);
+    // console.log(req.query.name);
     const allCharacters = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&skip=${skip}&limit=${limit}&name=${name}`
     );
