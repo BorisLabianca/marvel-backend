@@ -5,11 +5,23 @@ const router = express.Router();
 
 router.get("/personnages", async (req, res) => {
   try {
-    const { skip, limit, name } = req.query;
-    console.log(req.query);
+    let skip = "";
+    let name = "";
+    let limit = "";
+    if (req.query.skip) {
+      skip = req.query.skip;
+    }
+    if (req.query.name) {
+      name = req.query.name;
+    }
+    if (req.query.limit) {
+      limit = "";
+    }
+    console.log(req.query.name);
     const allCharacters = await axios.get(
       `https://lereacteur-marvel-api.herokuapp.com/characters?apiKey=${process.env.MARVEL_API_KEY}&skip=${skip}&limit=${limit}&name=${name}`
     );
+    // console.log(allCharacters);
     res.status(200).json(allCharacters.data);
   } catch (error) {
     res.status(400).json({ message: error.message });
