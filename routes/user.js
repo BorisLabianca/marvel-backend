@@ -64,6 +64,26 @@ router.post("/user/signup", async (req, res) => {
 
 router.post("/user/login", async (req, res) => {
   try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Both your email address and password are required.",
+      });
+    }
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      return res.status(401).json({ message: "Unauthorized." });
+    }
+
+    const newHash = SHA256(password + user.salt).toString(encBase64);
+    if (newHash !== user.hash) {
+      return res.status(401).json({ message: "Unauthorized." });
+    }
+    res.status(200).json({
+      _id: user._id,
+      token: user.token,
+      username: user.username,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
