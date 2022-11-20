@@ -1,5 +1,6 @@
 // Import des packages nécessaires
 const express = require("express");
+const fileUpload = require("express-fileupload");
 const SHA256 = require("crypto-js/sha256");
 const encBase64 = require("crypto-js/enc-base64");
 const uid2 = require("uid2");
@@ -7,10 +8,18 @@ const uid2 = require("uid2");
 // Appel de router
 const router = express.Router();
 
+// Apple de loudinary
+const cloudinary = require("cloudinary").v2;
+
 // Import du model User
 const User = require("../models/User");
 
-router.post("/user/signup", async (req, res) => {
+// Fonctions
+const convertToBase64 = (file) => {
+  return `data:${file.mimetype};base64,${file.data.toString("base64")}`;
+};
+
+router.post("/user/signup", fileUpload(), async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -52,11 +61,23 @@ router.post("/user/signup", async (req, res) => {
       token: token,
     });
 
+    if (req?.files?.avatar) {
+      const avatar = convertToBase64(req.files.avatar);
+      const uploadedAvatar = await cloudinary.uploader.upload(avatar, {
+        folder: `/marvel/user/${newUser._id}`,
+      });
+      console.log(uploadedAvatar);
+      newUser.avatar = uploadedAvatar;
+    }
+
     await newUser.save();
 
-    res
-      .status(200)
-      .json({ _id: newUser._id, token: token, username: username });
+    res.status(200).json({
+      _id: newUser._id,
+      token: token,
+      username: username,
+      avatar: newUser.avatar.secure_url,
+    });
   } catch (error) {
     res.status(400).json({ message: error.message });
   }
